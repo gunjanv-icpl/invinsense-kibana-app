@@ -317,7 +317,7 @@ export const AgentsTable = withErrorBoundary(
                   iconType='plusInCircle'
                   onClick={() => this.props.addingNewAgent()}
                 >
-                  Deploy new agent
+                  Deploy new agent from manager By Gunjan
                 </WzButtonPermissions>,
               ]}
               endpoint='/agents'
