@@ -83,3 +83,6 @@ public/assets/custom/*
 
 # Mac files
 .DS_Store
+
+plugins/main/node_modules
+plugins/main/target

@@ -112,6 +112,8 @@ export function TableWzAPI({
       ).data;
       setIsLoading(false);
       setTotalItems(totalItems);
+      if (rest.hasAgents)
+        rest.setAgents(response.data.data.affected_items);
       return {
         items: rest.mapResponseItem ? items.map(rest.mapResponseItem) : items,
         totalItems,
@@ -130,19 +132,19 @@ export function TableWzAPI({
       throw error;
     }
   },
-  []);
+    []);
 
   const renderActionButtons = (
     <>
       {Array.isArray(actionButtons)
         ? actionButtons.map((button, key) => (
-            <EuiFlexItem key={key} grow={false}>
-              {button}
-            </EuiFlexItem>
-          ))
+          <EuiFlexItem key={key} grow={false}>
+            {button}
+          </EuiFlexItem>
+        ))
         : typeof actionButtons === 'object' && (
-            <EuiFlexItem grow={false}>{actionButtons}</EuiFlexItem>
-          )}
+          <EuiFlexItem grow={false}>{actionButtons}</EuiFlexItem>
+        )}
     </>
   );
 
