@@ -21,6 +21,9 @@ import {
   EuiPanel,
   EuiToolTip,
   EuiIconTip,
+  EuiCheckbox,
+  EuiConfirmModal,
+  EuiTextArea
 } from '@elastic/eui';
 import { AppNavigate } from '../../../react-services/app-navigate';
 import { GroupTruncate } from '../../../components/common/util';
@@ -49,6 +52,7 @@ const searchBarWQLOptions = {
 export const AgentsTable = withErrorBoundary(
   class AgentsTable extends Component {
     _isMount = false;
+
     constructor(props) {
       super(props);
       this.state = {
@@ -56,14 +60,19 @@ export const AgentsTable = withErrorBoundary(
           default: { q: 'id!=000' },
           ...(sessionStorage.getItem('wz-agents-overview-table-filter')
             ? JSON.parse(
-                sessionStorage.getItem('wz-agents-overview-table-filter'),
-              )
+              sessionStorage.getItem('wz-agents-overview-table-filter'),
+            )
             : {}),
         },
         reloadTable: 0,
+        allChecked: false,
+        allChecked1: true,
+        isChecked: [],
+        agents: this.props.affected_items,
+        isBlockDomainModelVisible: false,
+        blockDomainTextArea: ""
       };
     }
-
     async componentDidMount() {
       this._isMount = true;
     }
@@ -79,6 +88,29 @@ export const AgentsTable = withErrorBoundary(
       this.setState({ reloadTable: Date.now() });
       await this.props.reload();
     }
+    //todo: add checkboxes here
+    async handleAllCheck() {
+      if (this.state.allChecked) {
+        this.setState({ allChecked: false, isChecked: [] });
+        return;
+      }
+      this.setState({ allChecked: true, isChecked: this.state.agents.map(data => data.id) });
+      // setAllChecked(true);
+      this.isAllChecked();
+      // setIsChecked(agentData.map(data => data.id));
+      return;
+    };
+
+    async handleSingleCheck(e) {
+      const { id } = e.target;
+      if (this.state.isChecked.includes(id)) {
+        this.setState({ allChecked: false, isChecked: this.state.isChecked.filter(checked_name => checked_name !== id) });
+        return;
+      }
+      this.state.isChecked.push(id);
+      this.setState({ allChecked: this.state.isChecked.length === this.state.agents.length });
+      // setAllChecked(isChecked.length === agentData.length)
+    };
 
     async componentDidUpdate(prevProps) {
       if (
@@ -159,9 +191,111 @@ export const AgentsTable = withErrorBoundary(
       );
     }
 
+    async assignGroup(groupName) {
+      debugger;
+      // setLoading(true);
+      if (this.state.isChecked.length == 0)
+        return;
+      // const params = {
+      //   pretty: false,
+      //   wait_for_complete: false,
+      //   group_id: groupName,
+      //   agents_list: this.state.isChecked.join(",")
+      // }
+      //"body": "{\"method\":\"PUT\",\"path\":\"/agents/group?pretty=false&wait_for_complete=false&group_id=" + groupName + "&agents_list=" + isChecked.join(",") + "\",\"body\":{},\"id\":\"default\"}",
+      const response = await WzRequest.apiReq('PUT', `/agents/group?pretty=false&wait_for_complete=false&group_id=${groupName}&agents_list=${this.state.isChecked.join(",")}`,{});
+
+      // var response = await AgentService.assignGroup(groupName);
+      // response.isSuccess ? toastMessage(response.data) : toastError();
+      this.reloadAgents();
+      // setLoading(false);
+    }
+    async blockDomains(agentIds, domainList) {
+      console.log("got values:", agentIds, "---", domainList)
+      //"body": `{\"method\":\"PUT\",\"path\":\"/active-response?agents_list=${agentIds}\",\"body\":{\"arguments\":[\"null\"],\"command\":\"block-domain0\",\"custom\":false,\"alert\":{\"data\":${domainList}},\"devTools\":true},\"id\":\"default\"}`,
+      if (this.state.isChecked.length == 0)
+        return;
+      const params = {
+        agents_list: this.state.isChecked.join(",")
+      }
+      const body = {
+        // "arguments": [null],
+        "command": "block-domain0",
+        "custom": false,
+        "alert": { data: { domains: domainList } },
+        "devTools": true
+      };
+      const response = await WzRequest.apiReq('PUT', `/active-response?agents_list=${agentIds}`, body);
+      // var response = await AgentService.blockDomains(agentIds, domainList);
+      // response.isSuccess ? toastMessage(response.data) : toastError();
+    }
+
+
+    async isAllChecked() {
+      return this.state.allChecked;
+    }
+
+    async onConfirmClick() {
+      debugger;
+      const textAreaValue = this.state.blockDomainTextArea;
+      // if (textAreaRef.current) {
+      //   const textAreaValue = textAreaRef.current.value;
+      //   if (textAreaValue === '') {
+      //     // Show an error message or handle the empty input case
+      //     console.log("Textarea is empty. Please enter domain values.");
+      //     // notifications.toasts.addDanger(
+      //     //   i18n.translate('testinvinsense.dataUpdated', {
+      //     //     defaultMessage: `Please provide at least one domain name in the specified format.`,
+      //     //   }));
+      //     return;
+      //   }
+      if (this.state.isChecked.length == 0 || textAreaValue == "")
+        return;
+      const splitDomains = textAreaValue.split(',').map(domain => domain.trim()).filter(Boolean);
+
+      this.setIsBlockDomainModalVisible(false);
+      // const jsonString = JSON.stringify({ domains: splitDomains });
+      // console.log("jsonString: ",jsonString);
+      var agentIds = this.state.isChecked.join(',');
+      // var scanRes = await handleAuthorizedAction(blockDomains, agentIds, jsonString)
+      var scanRes = await this.blockDomains(agentIds, splitDomains);
+      // var scanRes = blockDomains(selectedAgent.agentId,jsonString)
+
+      // toastMessage(scanRes)
+      //     } else {
+      //   console.log("textAreaRef.current is null");
+      // }
+    };
     // Columns with the property truncateText: true won't wrap the text
     // This is added to prevent the wrap because of the table-layout: auto
     defaultColumns = [
+      {
+        field: 'id',
+        name: (
+          <>
+            {/* <EuiCheckbox
+              id='all'
+              key='all'
+              onChange={this.handleAllCheck.bind(this)}
+              checked={this.state?.isChecked.length == this.state?.agents.length} /> */}
+            <a onClick={this.handleAllCheck.bind(this)}>All</a>
+          </>)
+        ,
+        truncateText: false,
+        mobileOptions: {
+          show: false,
+        },
+        sortable: false,
+        render: (agentId) => {
+          return <EuiCheckbox
+            id={agentId}
+            key={agentId}
+            checked={this.state.isChecked.includes(agentId)}
+            onChange={this.handleSingleCheck.bind(this)}
+          // data-test-subj={`todoCheckbox-${agent.agentId}`}
+          />
+        }
+      },
       {
         field: 'id',
         name: 'ID',
@@ -276,19 +410,29 @@ export const AgentsTable = withErrorBoundary(
         searchable: false,
       },
     ];
+    setAgents(data) {
+      this.setState({ agents: data });
+    }
+    setIsBlockDomainModalVisible(enable) {
+      this.setState({ isBlockDomainModelVisible: enable });
+    }
+    // if (isBlockDomainModalVisible) {
+    //   blockDomainModal = (
 
+    //   );
+    // }
     tableRender() {
       const getRowProps = item => {
         const { id } = item;
         return {
           'data-test-subj': `row-${id}`,
           className: 'customRowClass',
-          onClick: () => {},
+          onClick: () => { },
         };
       };
 
       const getCellProps = (item, column) => {
-        if (column.field == 'actions') {
+        if (column.field == 'actions' || column.field == 'id') {
           return;
         }
         return {
@@ -317,7 +461,7 @@ export const AgentsTable = withErrorBoundary(
                   iconType='plusInCircle'
                   onClick={() => this.props.addingNewAgent()}
                 >
-                  Deploy new agent from manager By Gunjan
+                  Deploy new agent
                 </WzButtonPermissions>,
               ]}
               endpoint='/agents'
@@ -421,22 +565,22 @@ export const AgentsTable = withErrorBoundary(
                                 sort: `+${field}`,
                                 ...(currentValue
                                   ? {
-                                      q: `${searchBarWQLOptions.implicitQuery.query}${searchBarWQLOptions.implicitQuery.conjunction}${field}~${currentValue}`,
-                                    }
+                                    q: `${searchBarWQLOptions.implicitQuery.query}${searchBarWQLOptions.implicitQuery.conjunction}${field}~${currentValue}`,
+                                  }
                                   : {
-                                      q: `${searchBarWQLOptions.implicitQuery.query}`,
-                                    }),
+                                    q: `${searchBarWQLOptions.implicitQuery.query}`,
+                                  }),
                               },
                             },
                           );
                           if (field === 'group') {
                             /* the group field is returned as an string[],
                             example: ['group1', 'group2']
-
+     
                             Due the API request done to get the distinct values for the groups is
                             not returning the exepected values, as workaround, the values are
                             extracted in the frontend using the returned results.
-
+     
                             This API request to get the distint values of groups doesn't
                             return the unique values for the groups, else the unique combination
                             of groups.
@@ -451,11 +595,15 @@ export const AgentsTable = withErrorBoundary(
                               .sort()
                               .map(group => ({ label: group }));
                           }
-                          return response?.data?.data.affected_items.map(
+
+                          const agentsData = response?.data?.data.affected_items.map(
                             item => ({
                               label: getLodash(item, field),
                             }),
                           );
+
+                          this.setState({ agents: agentsData, allChecked: false, isChecked: [] });
+                          return agentsData;
                         }
                       }
                     } catch (error) {
@@ -483,7 +631,11 @@ export const AgentsTable = withErrorBoundary(
                   <EuiButton
                     iconType='refresh'
                     fill={true}
-                    onClick={() => this.reloadAgents()}
+                    onClick={() => {
+                      self.setState({ allChecked: false, isChecked: [] });
+                      this.reloadAgents();
+                    }
+                    }
                   >
                     Refresh
                   </EuiButton>
@@ -497,12 +649,44 @@ export const AgentsTable = withErrorBoundary(
                 tableLayout: 'auto',
                 cellProps: getCellProps,
               }}
+              hasAgents={true}
+              setAgents={this.setAgents.bind(this)}
+              hasActionButton={true}
+              assignGroup={this.assignGroup.bind(this)}
+              setIsBlockDomainModalVisible={this.setIsBlockDomainModalVisible.bind(this)}
             />
           </EuiFlexItem>
-        </EuiFlexGroup>
+          {this.state.isBlockDomainModelVisible ?
+            <EuiConfirmModal
+              title="Block Domains"
+              onCancel={() => {
+                this.setIsBlockDomainModalVisible(false);
+              }}
+              onConfirm={() => {
+                this.onConfirmClick();
+                this.setIsBlockDomainModalVisible(false);
+              }}
+              cancelButtonText="Cancel"
+              confirmButtonText="Block"
+              buttonColor="primary"
+              defaultFocusedButton="confirm"
+            >
+              <p style={{ maxWidth: '500px' }}>Enter the domain names to be blocked on the selected agent machine, separating each domain with a comma.</p>
+              {/* <p>Selected agent ID: <b>{selectedAgent.agentId}</b></p> */}
+              <EuiTextArea
+                placeholder="testdomain.com,testdomain2.com"
+                // inputRef={textAreaRef}
+                // value={this.state.blockDomainTextArea}
+                onBlur={(e) => this.setState({ blockDomainTextArea: e.target.value })}
+                fullWidth
+                aria-label="Block Domain Input"
+              />
+            </EuiConfirmModal> : <></>
+          }
+        </EuiFlexGroup >
       );
     }
-
+    // actionGroupButtons = 
     filterGroupBadge = group => {
       this.setState({
         filters: {
@@ -525,6 +709,7 @@ export const AgentsTable = withErrorBoundary(
       ) : undefined;
     }
     render() {
+
       const table = this.tableRender();
 
       return (
@@ -532,9 +717,8 @@ export const AgentsTable = withErrorBoundary(
           <EuiPanel paddingSize='m'>{table}</EuiPanel>
         </div>
       );
-    }
-  },
-);
+    };
+  });
 
 AgentsTable.propTypes = {
   wzReq: PropTypes.func,

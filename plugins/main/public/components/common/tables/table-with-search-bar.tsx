@@ -11,7 +11,8 @@
  */
 
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { EuiBasicTable, EuiBasicTableProps, EuiSpacer } from '@elastic/eui';
+
+import { EuiBasicTable, EuiBasicTableProps, EuiSpacer, EuiFlexGroup, EuiFlexItem ,EuiButton } from '@elastic/eui';
 import _ from 'lodash';
 import { UI_ERROR_SEVERITIES } from '../../../react-services/error-orchestrator/types';
 import { UI_LOGGER_LEVELS } from '../../../../common/constants';
@@ -253,6 +254,73 @@ export function TableWithSearchBar<T>({
         }}
       />
       <EuiSpacer size='s' />
+      {rest.hasActionButton ?
+        <EuiFlexGroup gutterSize="l" wrap>
+          <EuiFlexItem>
+            <EuiButton
+              key="isolation0"
+              onClick={async () => {
+                await rest.assignGroup("q-isolation")
+              }}
+              isDisabled={false}
+              iconType="minusInCircle"
+            >
+              Isolation
+            </EuiButton>
+          </EuiFlexItem>
+          <EuiFlexItem>
+            <EuiButton
+              key="FullScan"
+              onClick={async () => {
+                await rest.assignGroup("q-full-scan")
+              }}
+              isDisabled={false}
+              iconType="minusInCircle"
+            >
+              Full scan
+            </EuiButton>
+          </EuiFlexItem>
+          <EuiFlexItem>
+
+            <EuiButton
+              key="QuickScan"
+              onClick={async () => {
+                await rest.assignGroup("q-quick-scan")
+              }}
+              isDisabled={false}
+              iconType="minusInCircle"
+            >
+              Quick scan
+            </EuiButton>
+          </EuiFlexItem>
+          <EuiFlexItem>
+
+            <EuiButton
+              key="unisolation"
+              onClick={async () => {
+                await rest.assignGroup("q-unisolation")
+              }}
+              isDisabled={false}
+              iconType="minusInCircle"
+            >
+              UnIsolation
+            </EuiButton>
+          </EuiFlexItem>
+          <EuiFlexItem>
+
+            <EuiButton
+              key="blockDomains"
+              onClick={async () => {
+                rest.setIsBlockDomainModalVisible(true);
+              }}
+              isDisabled={false}
+              iconType="minusInCircle"
+            >
+              Block Domains
+            </EuiButton>
+          </EuiFlexItem>
+        </EuiFlexGroup> : <></>
+      }
       <EuiBasicTable
         columns={tableColumns.map(
           ({ searchable, show, composeField, ...rest }) => ({ ...rest }),

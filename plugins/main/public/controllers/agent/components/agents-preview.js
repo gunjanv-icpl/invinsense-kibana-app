@@ -168,6 +168,7 @@ export const AgentsPreview = compose(
       } = await WzRequest.apiReq('GET', '/agents', {
         params: { limit: 1, sort: '-dateAdd', q: 'id!=000' },
       });
+   
       const agentMostActive = await this.props.tableProps.getMostActive();
       this.setState({
         loadingAgents: false,
@@ -215,7 +216,7 @@ export const AgentsPreview = compose(
         evolutionRenderComplete: true,
       });
     }
-
+    
     render() {
       const evolutionIsReady = this.props.resultState !== 'loading';
 
