@@ -41,6 +41,9 @@ import { AgentSynced } from '../../../components/agents/agent-synced';
 import { TableWzAPI } from '../../../components/common/tables';
 import { WzRequest } from '../../../react-services/wz-request';
 import { get as getLodash } from 'lodash';
+import {
+  getToasts
+} from '../../../kibana-services';
 
 const searchBarWQLOptions = {
   implicitQuery: {
@@ -95,9 +98,7 @@ export const AgentsTable = withErrorBoundary(
         return;
       }
       this.setState({ allChecked: true, isChecked: this.state.agents.map(data => data.id) });
-      // setAllChecked(true);
       this.isAllChecked();
-      // setIsChecked(agentData.map(data => data.id));
       return;
     };
 
@@ -109,7 +110,6 @@ export const AgentsTable = withErrorBoundary(
       }
       this.state.isChecked.push(id);
       this.setState({ allChecked: this.state.isChecked.length === this.state.agents.length });
-      // setAllChecked(isChecked.length === agentData.length)
     };
 
     async componentDidUpdate(prevProps) {
@@ -119,6 +119,15 @@ export const AgentsTable = withErrorBoundary(
       ) {
         this.setState({ filters: this.props.filters });
       }
+    }
+
+    showToast = (color, title, text, time) => {
+      getToasts().add({
+        color: color,
+        title: title,
+        text: text,
+        toastLifeTimeMs: time
+      });
     }
 
     actionButtonsRender(agent) {
@@ -192,42 +201,45 @@ export const AgentsTable = withErrorBoundary(
     }
 
     async assignGroup(groupName) {
-      debugger;
-      // setLoading(true);
-      if (this.state.isChecked.length == 0)
+      if (this.state.isChecked.length == 0) {
+        this.showToast('warning',
+          'Warning',
+          'Please select at least one agent',
+          3000);
         return;
-      // const params = {
-      //   pretty: false,
-      //   wait_for_complete: false,
-      //   group_id: groupName,
-      //   agents_list: this.state.isChecked.join(",")
-      // }
-      //"body": "{\"method\":\"PUT\",\"path\":\"/agents/group?pretty=false&wait_for_complete=false&group_id=" + groupName + "&agents_list=" + isChecked.join(",") + "\",\"body\":{},\"id\":\"default\"}",
-      const response = await WzRequest.apiReq('PUT', `/agents/group?pretty=false&wait_for_complete=false&group_id=${groupName}&agents_list=${this.state.isChecked.join(",")}`,{});
+      }
 
-      // var response = await AgentService.assignGroup(groupName);
-      // response.isSuccess ? toastMessage(response.data) : toastError();
+      const response = await WzRequest.apiReq('PUT', `/agents/group?pretty=false&wait_for_complete=false&group_id=${groupName}&agents_list=${this.state.isChecked.join(",")}`, {});
+      this.showToast('success',
+        'Success',
+        response?.data.message,
+        3000);
       this.reloadAgents();
-      // setLoading(false);
     }
     async blockDomains(agentIds, domainList) {
-      console.log("got values:", agentIds, "---", domainList)
-      //"body": `{\"method\":\"PUT\",\"path\":\"/active-response?agents_list=${agentIds}\",\"body\":{\"arguments\":[\"null\"],\"command\":\"block-domain0\",\"custom\":false,\"alert\":{\"data\":${domainList}},\"devTools\":true},\"id\":\"default\"}`,
-      if (this.state.isChecked.length == 0)
+      if (this.state.isChecked.length == 0) {
+        this.showToast('warning',
+          'Warning',
+          'Please select at least one agent',
+          3000);
         return;
+
+      }
       const params = {
         agents_list: this.state.isChecked.join(",")
       }
       const body = {
-        // "arguments": [null],
         "command": "block-domain0",
         "custom": false,
         "alert": { data: { domains: domainList } },
         "devTools": true
       };
       const response = await WzRequest.apiReq('PUT', `/active-response?agents_list=${agentIds}`, body);
-      // var response = await AgentService.blockDomains(agentIds, domainList);
-      // response.isSuccess ? toastMessage(response.data) : toastError();
+      console.log("Blockdomain", response);
+      this.showToast('success',
+        'Success',
+        response?.data.message,
+        3000);
     }
 
 
@@ -236,36 +248,32 @@ export const AgentsTable = withErrorBoundary(
     }
 
     async onConfirmClick() {
-      debugger;
       const textAreaValue = this.state.blockDomainTextArea;
-      // if (textAreaRef.current) {
-      //   const textAreaValue = textAreaRef.current.value;
-      //   if (textAreaValue === '') {
-      //     // Show an error message or handle the empty input case
-      //     console.log("Textarea is empty. Please enter domain values.");
-      //     // notifications.toasts.addDanger(
-      //     //   i18n.translate('testinvinsense.dataUpdated', {
-      //     //     defaultMessage: `Please provide at least one domain name in the specified format.`,
-      //     //   }));
-      //     return;
-      //   }
-      if (this.state.isChecked.length == 0 || textAreaValue == "")
-        return;
+
+      if (this.state.isChecked.length == 0 || textAreaValue == "") {
+        if (this.state.isChecked.length == 0) {
+          this.showToast('warning',
+            'Warning',
+            'Please select at least one agent',
+            3000);
+          return;
+        }
+        else {
+          this.showToast('warning',
+            'Warning',
+            'Please enter domain vaule',
+            3000);
+          return;
+        }
+      }
       const splitDomains = textAreaValue.split(',').map(domain => domain.trim()).filter(Boolean);
 
       this.setIsBlockDomainModalVisible(false);
-      // const jsonString = JSON.stringify({ domains: splitDomains });
-      // console.log("jsonString: ",jsonString);
       var agentIds = this.state.isChecked.join(',');
-      // var scanRes = await handleAuthorizedAction(blockDomains, agentIds, jsonString)
       var scanRes = await this.blockDomains(agentIds, splitDomains);
-      // var scanRes = blockDomains(selectedAgent.agentId,jsonString)
-
-      // toastMessage(scanRes)
-      //     } else {
-      //   console.log("textAreaRef.current is null");
-      // }
+      console.log("scnResBlockDomain", scanRes);
     };
+
     // Columns with the property truncateText: true won't wrap the text
     // This is added to prevent the wrap because of the table-layout: auto
     defaultColumns = [
@@ -292,7 +300,6 @@ export const AgentsTable = withErrorBoundary(
             key={agentId}
             checked={this.state.isChecked.includes(agentId)}
             onChange={this.handleSingleCheck.bind(this)}
-          // data-test-subj={`todoCheckbox-${agent.agentId}`}
           />
         }
       },
@@ -416,11 +423,7 @@ export const AgentsTable = withErrorBoundary(
     setIsBlockDomainModalVisible(enable) {
       this.setState({ isBlockDomainModelVisible: enable });
     }
-    // if (isBlockDomainModalVisible) {
-    //   blockDomainModal = (
 
-    //   );
-    // }
     tableRender() {
       const getRowProps = item => {
         const { id } = item;
@@ -675,8 +678,6 @@ export const AgentsTable = withErrorBoundary(
               {/* <p>Selected agent ID: <b>{selectedAgent.agentId}</b></p> */}
               <EuiTextArea
                 placeholder="testdomain.com,testdomain2.com"
-                // inputRef={textAreaRef}
-                // value={this.state.blockDomainTextArea}
                 onBlur={(e) => this.setState({ blockDomainTextArea: e.target.value })}
                 fullWidth
                 aria-label="Block Domain Input"
