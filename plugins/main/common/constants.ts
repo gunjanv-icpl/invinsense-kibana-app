@@ -1130,7 +1130,7 @@ export const PLUGIN_SETTINGS: { [key: string]: TPluginSetting } = {
         recommended: {
           dimensions: {
             width: 300,
-            height: 70,
+            height: 100,
             unit: 'px',
           },
         },
