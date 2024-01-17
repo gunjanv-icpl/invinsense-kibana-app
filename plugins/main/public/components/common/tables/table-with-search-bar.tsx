@@ -12,7 +12,7 @@
 
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 
-import { EuiBasicTable, EuiBasicTableProps, EuiSpacer, EuiFlexGroup, EuiFlexItem ,EuiButton } from '@elastic/eui';
+import { EuiBasicTable, EuiBasicTableProps, EuiSpacer, EuiFlexGroup, EuiFlexItem, EuiButton } from '@elastic/eui';
 import _ from 'lodash';
 import { UI_ERROR_SEVERITIES } from '../../../react-services/error-orchestrator/types';
 import { UI_LOGGER_LEVELS } from '../../../../common/constants';
@@ -255,68 +255,96 @@ export function TableWithSearchBar<T>({
       />
       <EuiSpacer size='s' />
       {rest.hasActionButton ?
-        <EuiFlexGroup gutterSize="l" wrap>
-          <EuiFlexItem>
-            <EuiButton
+        <EuiFlexGroup gutterSize="l" wrap justifyContent="flexEnd">
+          <EuiFlexItem grow={false}>
+            <EuiButton              
+              color='primary'
               key="isolation0"
+              size='m'
               onClick={async () => {
                 await rest.assignGroup("q-isolation")
               }}
               isDisabled={false}
-              iconType="minusInCircle"
             >
               Isolation
             </EuiButton>
           </EuiFlexItem>
-          <EuiFlexItem>
-            <EuiButton
+          <EuiFlexItem grow={false}>
+            <EuiButton              
+              color='primary'
+              size='m'
               key="FullScan"
               onClick={async () => {
                 await rest.assignGroup("q-full-scan")
               }}
               isDisabled={false}
-              iconType="minusInCircle"
             >
               Full scan
             </EuiButton>
           </EuiFlexItem>
-          <EuiFlexItem>
-
-            <EuiButton
+          <EuiFlexItem grow={false}>
+            <EuiButton              
+              color='primary'
+              size='m'
               key="QuickScan"
               onClick={async () => {
                 await rest.assignGroup("q-quick-scan")
               }}
               isDisabled={false}
-              iconType="minusInCircle"
             >
               Quick scan
             </EuiButton>
           </EuiFlexItem>
-          <EuiFlexItem>
-
-            <EuiButton
+          <EuiFlexItem grow={false}>
+            <EuiButton              
+              color='primary'
+              size='m'
               key="unisolation"
               onClick={async () => {
                 await rest.assignGroup("q-unisolation")
               }}
               isDisabled={false}
-              iconType="minusInCircle"
             >
               UnIsolation
             </EuiButton>
           </EuiFlexItem>
-          <EuiFlexItem>
-
-            <EuiButton
+          <EuiFlexItem grow={false}>
+            <EuiButton              
+              color='primary'
+              size='m'
               key="blockDomains"
               onClick={async () => {
                 rest.setIsBlockDomainModalVisible(true);
               }}
               isDisabled={false}
-              iconType="minusInCircle"
             >
               Block Domains
+            </EuiButton>
+          </EuiFlexItem>
+          <EuiFlexItem grow={false}>
+            <EuiButton              
+              color='primary'
+              size='m'
+              key="blockUsb"
+              onClick={async () => {
+                rest.blockUSB();
+              }}
+              isDisabled={false}
+            >
+              Block USB
+            </EuiButton>
+          </EuiFlexItem>
+          <EuiFlexItem grow={false}>
+            <EuiButton              
+              color='primary'
+              size='m'
+              key="unBlockUsb"
+              onClick={async () => {
+                rest.unBlockUSB();
+              }}
+              isDisabled={false}
+            >
+              Unblock USB
             </EuiButton>
           </EuiFlexItem>
         </EuiFlexGroup> : <></>

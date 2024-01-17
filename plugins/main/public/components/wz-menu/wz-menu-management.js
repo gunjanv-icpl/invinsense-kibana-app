@@ -16,6 +16,7 @@ import { connect } from 'react-redux';
 import { AppNavigate } from '../../react-services/app-navigate'
 import { WAZUH_MENU_MANAGEMENT_SECTIONS_ID } from '../../../common/constants';
 import { WAZUH_MENU_MANAGEMENT_SECTIONS_CY_TEST_ID } from '../../../common/wazu-menu/wz-menu-management.cy';
+import { padding } from 'vega-lite-next/src/compile/scale/properties';
 
 class WzMenuManagement extends Component {
   constructor(props) {
