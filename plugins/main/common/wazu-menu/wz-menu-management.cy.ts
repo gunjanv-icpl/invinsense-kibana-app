@@ -25,4 +25,9 @@ export enum WAZUH_MENU_MANAGEMENT_SECTIONS_CY_TEST_ID {
   LOGS = 'menuManagementLogsLink',
   REPORTING = 'menuManagementReportingLink',
   STATISTICS = 'menuManagementStatisticsLink',
+  ADVANCE='menuManagementAdvanceLink',
+  FIREWALL_MANAGEMENT='menuManagementFirewallManagmentLink',
+  COMPONENT_MANAGEMENT='menuManagementComponentManagementLink',
+  BITLOCKER='menuManagementBitLockerLink',
+  BLOCK_STORAGE_DEVICE_MANAGMENT='menuManagementBlockStorageDeviceManagmentLink'
 }

@@ -96,6 +96,31 @@ class WzMenuManagement extends Component {
         cyTestId: WAZUH_MENU_MANAGEMENT_SECTIONS_CY_TEST_ID.STATISTICS,
         text: 'Statistics',
       },
+      advance: {
+        id: WAZUH_MENU_MANAGEMENT_SECTIONS_ID.ADVANCE,
+        cyTestId: WAZUH_MENU_MANAGEMENT_SECTIONS_CY_TEST_ID.ADVANCE,
+        text: 'Advance',
+      },
+      firewall:{
+        id: WAZUH_MENU_MANAGEMENT_SECTIONS_ID.FIREWALL_MANAGEMENT,
+        cyTestId: WAZUH_MENU_MANAGEMENT_SECTIONS_CY_TEST_ID.FIREWALL_MANAGEMENT,
+        text: 'Firewall Management',
+      },
+      component:{
+        id: WAZUH_MENU_MANAGEMENT_SECTIONS_ID.COMPONENT_MANAGEMENT,
+        cyTestId: WAZUH_MENU_MANAGEMENT_SECTIONS_CY_TEST_ID.COMPONENT_MANAGEMENT,
+        text: 'Component Management',
+      },
+      bitlocker:{
+        id: WAZUH_MENU_MANAGEMENT_SECTIONS_ID.BITLOCKER,
+        cyTestId: WAZUH_MENU_MANAGEMENT_SECTIONS_CY_TEST_ID.BITLOCKER,
+        text: 'BitLocker',
+      },
+      blockstoragedevice:{
+        id: WAZUH_MENU_MANAGEMENT_SECTIONS_ID.BLOCK_STORAGE_DEVICE_MANAGMENT,
+        cyTestId: WAZUH_MENU_MANAGEMENT_SECTIONS_CY_TEST_ID.BLOCK_STORAGE_DEVICE_MANAGMENT,
+        text: 'Block Storage Device',
+      }
     };
 
     this.paths = {
@@ -164,6 +189,20 @@ class WzMenuManagement extends Component {
       }
     ];
 
+    const sideNavAdvance = [
+      {
+        name: this.managementSections.advance.text,
+        id: this.managementSections.advance.id,
+        icon: <EuiIcon type="managementApp" color="primary" />,
+        items: [
+          this.createItem(this.managementSections.firewall),
+          this.createItem(this.managementSections.component),
+          this.createItem(this.managementSections.bitlocker),
+          this.createItem(this.managementSections.blockstoragedevice),
+        ]
+      }
+    ];
+
     return (
       <div className="WzManagementSideMenu">
         <EuiFlexGroup>
@@ -183,6 +222,11 @@ class WzMenuManagement extends Component {
           </EuiFlexItem>
           <EuiFlexItem grow={false}>
             <EuiSideNav items={sideNavStatus} style={{ padding: '4px 12px' }} />
+          </EuiFlexItem>
+        </EuiFlexGroup>
+        <EuiFlexGroup responsive={false}>
+          <EuiFlexItem grow={false}>
+              <EuiSideNav items={sideNavAdvance} style={{padding: '4px 12px'}}></EuiSideNav>
           </EuiFlexItem>
         </EuiFlexGroup>
       </div>

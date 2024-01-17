@@ -213,7 +213,7 @@ export enum WAZUH_MODULES_ID {
 
 export enum WAZUH_MENU_MANAGEMENT_SECTIONS_ID {
   MANAGEMENT = 'management',
-  ADMINISTRATION = 'administration',
+  ADMINISTRATION = 'administration',  
   RULESET = 'ruleset',
   RULES = 'rules',
   DECODERS = 'decoders',
@@ -226,6 +226,11 @@ export enum WAZUH_MENU_MANAGEMENT_SECTIONS_ID {
   LOGS = 'logs',
   REPORTING = 'reporting',
   STATISTICS = 'statistics',
+  ADVANCE = 'advance',
+  FIREWALL_MANAGEMENT='firewallmanagment',
+  COMPONENT_MANAGEMENT='componentmanagement',
+  BITLOCKER='bitlocker',
+  BLOCK_STORAGE_DEVICE_MANAGMENT='blockstoragedevicemanagment'
 }
 
 export enum WAZUH_MENU_TOOLS_SECTIONS_ID {
