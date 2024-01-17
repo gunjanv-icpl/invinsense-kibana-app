@@ -45,14 +45,14 @@ import { getThemeAssetURL, getAssetURL } from '../../../utils/assets';
 
 const checks = {
   api: {
-    title: 'Check Wazuh API connection',
+    title: 'Check Invinsense API connection',
     label: 'API connection',
     validator: checkApiService,
     awaitFor: [],
     canRetry: true,
   },
   setup: {
-    title: 'Check Wazuh API version',
+    title: 'Check Invinsense API version',
     label: 'API version',
     validator: checkSetupService,
     awaitFor: ["api"],

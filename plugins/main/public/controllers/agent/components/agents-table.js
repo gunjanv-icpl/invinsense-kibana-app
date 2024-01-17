@@ -201,6 +201,14 @@ export const AgentsTable = withErrorBoundary(
     }
 
     async assignGroup(groupName) {
+      const selectedAgents = this.state.agents
+        .filter(agent => this.state.isChecked.includes(agent.id))
+        .map(agent => {
+          return agent;
+        });
+      const hasNotWindowsAgent = selectedAgents.filter(element => element.os && element.os.platform !== 'windows');
+      const hasWindowAgent = selectedAgents.filter(element => element.os && element.os.platform === 'windows');
+
       if (this.state.isChecked.length == 0) {
         this.showToast('warning',
           'Warning',
@@ -208,14 +216,24 @@ export const AgentsTable = withErrorBoundary(
           3000);
         return;
       }
+      else if (hasNotWindowsAgent.length > 0) {
+        const otherAgentsName = hasNotWindowsAgent.map(element => element.name).join(", ");
+        this.showToast('warning',
+          'Warning',
+          'We are not perform ' + groupName + ' in ' + otherAgentsName + ' agents which is are not windows agents.',
+          3000);
+      }
 
-      const response = await WzRequest.apiReq('PUT', `/agents/group?pretty=false&wait_for_complete=false&group_id=${groupName}&agents_list=${this.state.isChecked.join(",")}`, {});
+      const windowsAgentsId = hasWindowAgent.map(element => element.id).join(", ");
+      console.log(windowsAgentsId);
+      const response = await WzRequest.apiReq('PUT', `/agents/group?pretty=false&wait_for_complete=false&group_id=${groupName}&agents_list=${windowsAgentsId}`, {});
       this.showToast('success',
         'Success',
         response?.data.message,
         3000);
       this.reloadAgents();
     }
+
     async blockDomains(agentIds, domainList) {
       if (this.state.isChecked.length == 0) {
         this.showToast('warning',

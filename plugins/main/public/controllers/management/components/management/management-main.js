@@ -29,6 +29,7 @@ import {
   SECTION_DECODERS_SECTION,
   SECTION_RULES_SECTION
 } from './common/constants';
+import InvinsenseFireWall from './firewall/firewall-managment';
 
 class WzManagementMain extends Component {
   constructor(props) {
@@ -53,6 +54,7 @@ class WzManagementMain extends Component {
           (section === 'reporting' && <WzReporting />) ||
           (section === 'statistics' && <WzStatistics />) ||
           (section === 'logs' && <WzLogs />) ||
+          ((section === 'firewallmanagment' || section === 'componentmanagement' || section === 'bitlocker' || section === 'blockstoragedevicemanagment' ) && <InvinsenseFireWall/>) ||
           (section === 'configuration' && <WzConfiguration {...this.props.configurationProps} />) ||
           (section === SECTION_DECODERS_SECTION && <WzDecoders
             logtestProps={this.props.logtestProps}
