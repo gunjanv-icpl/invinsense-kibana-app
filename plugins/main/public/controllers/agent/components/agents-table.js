@@ -220,12 +220,11 @@ export const AgentsTable = withErrorBoundary(
         const otherAgentsName = hasNotWindowsAgent.map(element => element.name).join(", ");
         this.showToast('warning',
           'Warning',
-          'We are not perform ' + groupName + ' in ' + otherAgentsName + ' agents which is are not windows agents.',
+          'We are not perform ' + groupName + ' in ' + otherAgentsName + ' agents, which is are not windows agents.',
           3000);
       }
 
       const windowsAgentsId = hasWindowAgent.map(element => element.id).join(", ");
-      console.log(windowsAgentsId);
       const response = await WzRequest.apiReq('PUT', `/agents/group?pretty=false&wait_for_complete=false&group_id=${groupName}&agents_list=${windowsAgentsId}`, {});
       this.showToast('success',
         'Success',
@@ -235,25 +234,113 @@ export const AgentsTable = withErrorBoundary(
     }
 
     async blockDomains(agentIds, domainList) {
+      const selectedAgents = this.state.agents
+        .filter(agent => this.state.isChecked.includes(agent.id))
+        .map(agent => {
+          return agent;
+        });
+      const hasNotWindowsAgent = selectedAgents.filter(element => element.os && element.os.platform !== 'windows');
+      const hasWindowAgent = selectedAgents.filter(element => element.os && element.os.platform === 'windows');
+
       if (this.state.isChecked.length == 0) {
         this.showToast('warning',
           'Warning',
           'Please select at least one agent',
           3000);
         return;
+      }
+      else if (hasNotWindowsAgent.length > 0) {
+        const otherAgentsName = hasNotWindowsAgent.map(element => element.name).join(", ");
+        this.showToast('warning',
+          'Warning',
+          'We are not perform block domains in ' + otherAgentsName + ' agents, which is are not windows agents.',
+          3000);
+      }
 
-      }
-      const params = {
-        agents_list: this.state.isChecked.join(",")
-      }
       const body = {
         "command": "block-domain0",
         "custom": false,
         "alert": { data: { domains: domainList } },
         "devTools": true
       };
-      const response = await WzRequest.apiReq('PUT', `/active-response?agents_list=${agentIds}`, body);
-      console.log("Blockdomain", response);
+      const windowsAgentsId = hasWindowAgent.map(element => element.id).join(", ");
+      const response = await WzRequest.apiReq('PUT', `/active-response?agents_list=${windowsAgentsId}`, body);
+      this.showToast('success',
+        'Success',
+        response?.data.message,
+        3000);
+    }
+
+    async blockUSB() {
+      const selectedAgents = this.state.agents
+        .filter(agent => this.state.isChecked.includes(agent.id))
+        .map(agent => {
+          return agent;
+        });
+      const hasNotWindowsAgent = selectedAgents.filter(element => element.os && element.os.platform !== 'windows');
+      const hasWindowAgent = selectedAgents.filter(element => element.os && element.os.platform === 'windows');
+
+      if (this.state.isChecked.length == 0) {
+        this.showToast('warning',
+          'Warning',
+          'Please select at least one agent',
+          3000);
+        return;
+      }
+      else if (hasNotWindowsAgent.length > 0) {
+        const otherAgentsName = hasNotWindowsAgent.map(element => element.name).join(", ");
+        this.showToast('warning',
+          'Warning',
+          'We are not perform block usb in ' + otherAgentsName + ' agents, which is are not windows agents.',
+          3000);
+      }
+
+      const body = {
+        "command": "blockusb0",
+        "custom": false,
+        "alert": { data: {} },
+        "devTools": true
+      };
+      const windowsAgentsId = hasWindowAgent.map(element => element.id).join(", ");
+      const response = await WzRequest.apiReq('PUT', `/active-response?agents_list=${windowsAgentsId}`, body);
+      this.showToast('success',
+        'Success',
+        response?.data.message,
+        3000);
+    }
+
+    async unBlockUSB() {
+      const selectedAgents = this.state.agents
+        .filter(agent => this.state.isChecked.includes(agent.id))
+        .map(agent => {
+          return agent;
+        });
+      const hasNotWindowsAgent = selectedAgents.filter(element => element.os && element.os.platform !== 'windows');
+      const hasWindowAgent = selectedAgents.filter(element => element.os && element.os.platform === 'windows');
+
+      if (this.state.isChecked.length == 0) {
+        this.showToast('warning',
+          'Warning',
+          'Please select at least one agent',
+          3000);
+        return;
+      }
+      else if (hasNotWindowsAgent.length > 0) {
+        const otherAgentsName = hasNotWindowsAgent.map(element => element.name).join(", ");
+        this.showToast('warning',
+          'Warning',
+          'We are not perform block usb in ' + otherAgentsName + ' agents, which is are not windows agents.',
+          3000);
+      }
+
+      const body = {
+        "command": "unblockusb0",
+        "custom": false,
+        "alert": { data: {} },
+        "devTools": true
+      };
+      const windowsAgentsId = hasWindowAgent.map(element => element.id).join(", ");
+      const response = await WzRequest.apiReq('PUT', `/active-response?agents_list=${windowsAgentsId}`, body);
       this.showToast('success',
         'Success',
         response?.data.message,
@@ -675,6 +762,8 @@ export const AgentsTable = withErrorBoundary(
               hasActionButton={true}
               assignGroup={this.assignGroup.bind(this)}
               setIsBlockDomainModalVisible={this.setIsBlockDomainModalVisible.bind(this)}
+              blockUSB={this.blockUSB.bind(this)}
+              unBlockUSB={this.unBlockUSB.bind(this)}
             />
           </EuiFlexItem>
           {this.state.isBlockDomainModelVisible ?
