@@ -125,7 +125,6 @@ export function TableWithSearchBar<T>({
   const [refresh, setRefresh] = useState(Date.now());
 
   const isMounted = useRef(false);
-
   const searchBarWQLOptions = useMemo(
     () => ({
       searchTermFields: tableColumns

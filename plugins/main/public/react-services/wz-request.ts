@@ -18,6 +18,7 @@ import IApiResponse from './interfaces/api-response.interface';
 import { getHttp } from '../kibana-services';
 import { PLUGIN_PLATFORM_REQUEST_HEADERS } from '../../common/constants';
 import { request } from '../services/request-handler';
+import { getToasts } from '../kibana-services';
 
 export class WzRequest {
   static wazuhConfig: any;
@@ -32,15 +33,24 @@ export class WzRequest {
     method,
     path,
     payload: any = null,
-    extraOptions: { shouldRetry?: boolean, checkCurrentApiIsUp?: boolean, overwriteHeaders?: any } = {
-      shouldRetry: true, 
+    extraOptions: {
+      shouldRetry?: boolean;
+      checkCurrentApiIsUp?: boolean;
+      overwriteHeaders?: any;
+    } = {
+      shouldRetry: true,
       checkCurrentApiIsUp: true,
-      overwriteHeaders: {}
+      overwriteHeaders: {},
     }
   ) {
-    const shouldRetry = typeof extraOptions.shouldRetry === 'boolean' ? extraOptions.shouldRetry : true; 
-    const checkCurrentApiIsUp = typeof extraOptions.checkCurrentApiIsUp === 'boolean' ? extraOptions.checkCurrentApiIsUp : true;
-    const overwriteHeaders = typeof extraOptions.overwriteHeaders === 'object' ? extraOptions.overwriteHeaders : {};
+    const shouldRetry =
+      typeof extraOptions.shouldRetry === 'boolean' ? extraOptions.shouldRetry : true;
+    const checkCurrentApiIsUp =
+      typeof extraOptions.checkCurrentApiIsUp === 'boolean'
+        ? extraOptions.checkCurrentApiIsUp
+        : true;
+    const overwriteHeaders =
+      typeof extraOptions.overwriteHeaders === 'object' ? extraOptions.overwriteHeaders : {};
     try {
       if (!method || !path) {
         throw new Error('Missing parameters');
@@ -52,7 +62,11 @@ export class WzRequest {
       const url = getHttp().basePath.prepend(path);
       const options = {
         method: method,
-        headers: { ...PLUGIN_PLATFORM_REQUEST_HEADERS, 'content-type': 'application/json', ...overwriteHeaders },
+        headers: {
+          ...PLUGIN_PLATFORM_REQUEST_HEADERS,
+          'content-type': 'application/json',
+          ...overwriteHeaders,
+        },
         url: url,
         data: payload,
         timeout: timeout,
@@ -67,7 +81,7 @@ export class WzRequest {
       return Promise.resolve(data);
     } catch (error) {
       //if the requests fails, we need to check if the API is down
-      if(checkCurrentApiIsUp){
+      if (checkCurrentApiIsUp) {
         const currentApi = JSON.parse(AppState.getCurrentAPI() || '{}');
         if (currentApi && currentApi.id) {
           try {
@@ -101,7 +115,7 @@ export class WzRequest {
       }
       return errorMessage
         ? Promise.reject(this.returnErrorInstance(error, errorMessage))
-        : Promise.reject(this.returnErrorInstance(error,'Server did not respond'));
+        : Promise.reject(this.returnErrorInstance(error, 'Server did not respond'));
     }
   }
 
@@ -112,9 +126,9 @@ export class WzRequest {
    * @param {Object} body Request body
    */
   static async apiReq(
-    method, 
-    path, 
-    body, 
+    method,
+    path,
+    body,
     options: { checkCurrentApiIsUp?: boolean } = { checkCurrentApiIsUp: true }
   ): Promise<IApiResponse<any>> {
     try {
@@ -128,12 +142,24 @@ export class WzRequest {
       const hasFailed = (((response || {}).data || {}).data || {}).total_failed_items || 0;
 
       if (hasFailed) {
+        let showToast = (color, title, text, time) => {
+          getToasts().add({
+            color: color,
+            title: title,
+            text: text,
+            toastLifeTimeMs: time,
+          });
+        };
+
         const error =
           ((((response.data || {}).data || {}).failed_items || [])[0] || {}).error || {};
         const failed_ids =
           ((((response.data || {}).data || {}).failed_items || [])[0] || {}).id || {};
         const message = (response.data || {}).message || 'Unexpected error';
-        const errorMessage = `${message} (${error.code}) - ${error.message} ${failed_ids && failed_ids.length > 1 ? ` Affected ids: ${failed_ids} ` : ''}`
+        const errorMessage = `${message} (${error.code}) - ${error.message} ${
+          failed_ids && failed_ids.length > 1 ? ` Affected ids: ${failed_ids} ` : ''
+        }`;
+        showToast('danger', message, error.message, 3000);
         return Promise.reject(this.returnErrorInstance(null, errorMessage));
       }
       return Promise.resolve(response);
@@ -167,15 +193,15 @@ export class WzRequest {
 
   /**
    * Customize message and return an error object
-   * @param error 
-   * @param message 
+   * @param error
+   * @param message
    * @returns error
    */
-  static returnErrorInstance(error: any, message: string | undefined){
-    if(!error || typeof error === 'string'){
+  static returnErrorInstance(error: any, message: string | undefined) {
+    if (!error || typeof error === 'string') {
       return new Error(message || error);
     }
-    error.message = message
-    return error
+    error.message = message;
+    return error;
   }
 }
