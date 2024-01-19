@@ -23,7 +23,8 @@ import {
   EuiIconTip,
   EuiCheckbox,
   EuiConfirmModal,
-  EuiTextArea
+  EuiTextArea,
+  EuiHealth,
 } from '@elastic/eui';
 import { AppNavigate } from '../../../react-services/app-navigate';
 import { GroupTruncate } from '../../../components/common/util';
@@ -41,9 +42,7 @@ import { AgentSynced } from '../../../components/agents/agent-synced';
 import { TableWzAPI } from '../../../components/common/tables';
 import { WzRequest } from '../../../react-services/wz-request';
 import { get as getLodash } from 'lodash';
-import {
-  getToasts
-} from '../../../kibana-services';
+import { getToasts } from '../../../kibana-services';
 
 const searchBarWQLOptions = {
   implicitQuery: {
@@ -62,9 +61,7 @@ export const AgentsTable = withErrorBoundary(
         filters: {
           default: { q: 'id!=000' },
           ...(sessionStorage.getItem('wz-agents-overview-table-filter')
-            ? JSON.parse(
-              sessionStorage.getItem('wz-agents-overview-table-filter'),
-            )
+            ? JSON.parse(sessionStorage.getItem('wz-agents-overview-table-filter'))
             : {}),
         },
         reloadTable: 0,
@@ -73,7 +70,7 @@ export const AgentsTable = withErrorBoundary(
         isChecked: [],
         agents: this.props.affected_items,
         isBlockDomainModelVisible: false,
-        blockDomainTextArea: ""
+        blockDomainTextArea: '',
       };
     }
     async componentDidMount() {
@@ -97,20 +94,23 @@ export const AgentsTable = withErrorBoundary(
         this.setState({ allChecked: false, isChecked: [] });
         return;
       }
-      this.setState({ allChecked: true, isChecked: this.state.agents.map(data => data.id) });
+      this.setState({ allChecked: true, isChecked: this.state.agents.map((data) => data.id) });
       this.isAllChecked();
       return;
-    };
+    }
 
     async handleSingleCheck(e) {
       const { id } = e.target;
       if (this.state.isChecked.includes(id)) {
-        this.setState({ allChecked: false, isChecked: this.state.isChecked.filter(checked_name => checked_name !== id) });
+        this.setState({
+          allChecked: false,
+          isChecked: this.state.isChecked.filter((checked_name) => checked_name !== id),
+        });
         return;
       }
       this.state.isChecked.push(id);
       this.setState({ allChecked: this.state.isChecked.length === this.state.agents.length });
-    };
+    }
 
     async componentDidUpdate(prevProps) {
       if (
@@ -126,38 +126,32 @@ export const AgentsTable = withErrorBoundary(
         color: color,
         title: title,
         text: text,
-        toastLifeTimeMs: time
+        toastLifeTimeMs: time,
       });
-    }
+    };
 
     actionButtonsRender(agent) {
       return (
         <div className={'icon-box-action'}>
-          <EuiToolTip
-            content='Open summary panel for this agent'
-            position='left'
-          >
+          <EuiToolTip content="Open summary panel for this agent" position="left">
             <EuiButtonIcon
-              onClick={ev => {
+              onClick={(ev) => {
                 ev.stopPropagation();
                 AppNavigate.navigateToModule(ev, 'agents', {
                   tab: 'welcome',
                   agent: agent.id,
                 });
               }}
-              iconType='eye'
+              iconType="eye"
               color={'primary'}
-              aria-label='Open summary panel for this agent'
+              aria-label="Open summary panel for this agent"
             />
           </EuiToolTip>
           &nbsp;
           {agent.status !== API_NAME_AGENT_STATUS.NEVER_CONNECTED && (
-            <EuiToolTip
-              content='Open configuration for this agent'
-              position='left'
-            >
+            <EuiToolTip content="Open configuration for this agent" position="left">
               <EuiButtonIcon
-                onClick={ev => {
+                onClick={(ev) => {
                   ev.stopPropagation();
                   AppNavigate.navigateToModule(ev, 'agents', {
                     tab: 'configuration',
@@ -165,8 +159,8 @@ export const AgentsTable = withErrorBoundary(
                   });
                 }}
                 color={'primary'}
-                iconType='wrench'
-                aria-label='Open configuration for this agent'
+                iconType="wrench"
+                aria-label="Open configuration for this agent"
               />
             </EuiToolTip>
           )}
@@ -188,11 +182,11 @@ export const AgentsTable = withErrorBoundary(
       const os_name = `${agent?.os?.name || ''} ${agent?.os?.version || ''}`;
 
       return (
-        <EuiFlexGroup gutterSize='xs'>
+        <EuiFlexGroup gutterSize="xs">
           <EuiFlexItem grow={false}>
             <i
               className={`fa fa-${icon} AgentsTable__soBadge AgentsTable__soBadge--${icon}`}
-              aria-hidden='true'
+              aria-hidden="true"
             ></i>
           </EuiFlexItem>{' '}
           <EuiFlexItem>{os_name.trim() || '-'}</EuiFlexItem>
@@ -202,151 +196,179 @@ export const AgentsTable = withErrorBoundary(
 
     async assignGroup(groupName) {
       const selectedAgents = this.state.agents
-        .filter(agent => this.state.isChecked.includes(agent.id))
-        .map(agent => {
+        .filter((agent) => this.state.isChecked.includes(agent.id))
+        .map((agent) => {
           return agent;
         });
-      const hasNotWindowsAgent = selectedAgents.filter(element => element.os && element.os.platform !== 'windows');
-      const hasWindowAgent = selectedAgents.filter(element => element.os && element.os.platform === 'windows');
+      const hasNotWindowsAgent = selectedAgents.filter(
+        (element) => element.os && element.os.platform !== 'windows'
+      );
+      const hasWindowAgent = selectedAgents.filter(
+        (element) => element.os && element.os.platform === 'windows'
+      );
 
       if (this.state.isChecked.length == 0) {
-        this.showToast('warning',
-          'Warning',
-          'Please select at least one agent',
-          3000);
+        this.showToast('warning', 'Warning', 'Please select at least one agent', 3000);
         return;
-      }
-      else if (hasNotWindowsAgent.length > 0) {
-        const otherAgentsName = hasNotWindowsAgent.map(element => element.name).join(", ");
-        this.showToast('warning',
+      } else if (hasNotWindowsAgent.length > 0) {
+        const otherAgentsName = hasNotWindowsAgent.map((element) => element.name).join(',');
+        this.showToast(
+          'warning',
           'Warning',
-          'We are not perform ' + groupName + ' in ' + otherAgentsName + ' agents, which is are not windows agents.',
-          3000);
+          'We are not perform ' +
+            groupName +
+            ' in ' +
+            otherAgentsName +
+            ' agents, which is are not windows agents.',
+          3000
+        );
       }
-
-      const windowsAgentsId = hasWindowAgent.map(element => element.id).join(", ");
-      const response = await WzRequest.apiReq('PUT', `/agents/group?pretty=false&wait_for_complete=false&group_id=${groupName}&agents_list=${windowsAgentsId}`, {});
-      this.showToast('success',
-        'Success',
-        response?.data.message,
-        3000);
-      this.reloadAgents();
+      if (hasWindowAgent.length > 0) {
+        const windowsAgentsId = hasWindowAgent.map((element) => element.id).join(',');
+        const response = await WzRequest.apiReq(
+          'PUT',
+          `/agents/group?pretty=false&wait_for_complete=false&group_id=${groupName}&agents_list=${windowsAgentsId}`,
+          {}
+        );
+        this.showToast('success', 'Success', response?.data.message, 3000);
+        this.reloadAgents();
+      }
     }
 
     async blockDomains(agentIds, domainList) {
       const selectedAgents = this.state.agents
-        .filter(agent => this.state.isChecked.includes(agent.id))
-        .map(agent => {
+        .filter((agent) => this.state.isChecked.includes(agent.id))
+        .map((agent) => {
           return agent;
         });
-      const hasNotWindowsAgent = selectedAgents.filter(element => element.os && element.os.platform !== 'windows');
-      const hasWindowAgent = selectedAgents.filter(element => element.os && element.os.platform === 'windows');
+      const hasNotWindowsAgent = selectedAgents.filter(
+        (element) => element.os && element.os.platform !== 'windows'
+      );
+      const hasWindowAgent = selectedAgents.filter(
+        (element) => element.os && element.os.platform === 'windows'
+      );
 
       if (this.state.isChecked.length == 0) {
-        this.showToast('warning',
-          'Warning',
-          'Please select at least one agent',
-          3000);
+        this.showToast('warning', 'Warning', 'Please select at least one agent', 3000);
         return;
-      }
-      else if (hasNotWindowsAgent.length > 0) {
-        const otherAgentsName = hasNotWindowsAgent.map(element => element.name).join(", ");
-        this.showToast('warning',
+      } else if (hasNotWindowsAgent.length > 0) {
+        const otherAgentsName = hasNotWindowsAgent.map((element) => element.name).join(',');
+        this.showToast(
+          'warning',
           'Warning',
-          'We are not perform block domains in ' + otherAgentsName + ' agents, which is are not windows agents.',
-          3000);
+          'We are not perform block domains in ' +
+            otherAgentsName +
+            ' agents, which is are not windows agents.',
+          3000
+        );
       }
 
       const body = {
-        "command": "block-domain0",
-        "custom": false,
-        "alert": { data: { domains: domainList } },
-        "devTools": true
+        command: 'block-domain0',
+        custom: false,
+        alert: { data: { domains: domainList } },
+        devTools: true,
       };
-      const windowsAgentsId = hasWindowAgent.map(element => element.id).join(", ");
-      const response = await WzRequest.apiReq('PUT', `/active-response?agents_list=${windowsAgentsId}`, body);
-      this.showToast('success',
-        'Success',
-        response?.data.message,
-        3000);
+      if (hasWindowAgent.length > 0) {
+        const windowsAgentsId = hasWindowAgent.map((element) => element.id).join(',');
+        const response = await WzRequest.apiReq(
+          'PUT',
+          `/active-response?agents_list=${windowsAgentsId}`,
+          body
+        );
+        this.showToast('success', 'Success', response?.data.message, 3000);
+      }
     }
 
     async blockUSB() {
       const selectedAgents = this.state.agents
-        .filter(agent => this.state.isChecked.includes(agent.id))
-        .map(agent => {
+        .filter((agent) => this.state.isChecked.includes(agent.id))
+        .map((agent) => {
           return agent;
         });
-      const hasNotWindowsAgent = selectedAgents.filter(element => element.os && element.os.platform !== 'windows');
-      const hasWindowAgent = selectedAgents.filter(element => element.os && element.os.platform === 'windows');
+      const hasNotWindowsAgent = selectedAgents.filter(
+        (element) => element.os && element.os.platform !== 'windows'
+      );
+      const hasWindowAgent = selectedAgents.filter(
+        (element) => element.os && element.os.platform === 'windows'
+      );
 
       if (this.state.isChecked.length == 0) {
-        this.showToast('warning',
-          'Warning',
-          'Please select at least one agent',
-          3000);
+        this.showToast('warning', 'Warning', 'Please select at least one agent', 3000);
         return;
-      }
-      else if (hasNotWindowsAgent.length > 0) {
-        const otherAgentsName = hasNotWindowsAgent.map(element => element.name).join(", ");
-        this.showToast('warning',
+      } else if (hasNotWindowsAgent.length > 0) {
+        const otherAgentsName = hasNotWindowsAgent.map((element) => element.name).join(', ');
+        this.showToast(
+          'warning',
           'Warning',
-          'We are not perform block usb in ' + otherAgentsName + ' agents, which is are not windows agents.',
-          3000);
+          'We are not perform block usb in ' +
+            otherAgentsName +
+            ' agents, which is are not windows agents.',
+          3000
+        );
       }
+      if (hasWindowAgent.length > 0) {
+        const body = {
+          command: 'blockusb0',
+          custom: false,
+          alert: { data: {} },
+          devTools: true,
+        };
 
-      const body = {
-        "command": "blockusb0",
-        "custom": false,
-        "alert": { data: {} },
-        "devTools": true
-      };
-      const windowsAgentsId = hasWindowAgent.map(element => element.id).join(", ");
-      const response = await WzRequest.apiReq('PUT', `/active-response?agents_list=${windowsAgentsId}`, body);
-      this.showToast('success',
-        'Success',
-        response?.data.message,
-        3000);
+        const windowsAgentsId = hasWindowAgent.map((element) => element.id).join(',');
+        const response = await WzRequest.apiReq(
+          'PUT',
+          `/active-response?agents_list=${windowsAgentsId}`,
+          body
+        );
+
+        this.showToast('success', 'Success', response?.data.message, 3000);
+      }
     }
 
     async unBlockUSB() {
       const selectedAgents = this.state.agents
-        .filter(agent => this.state.isChecked.includes(agent.id))
-        .map(agent => {
+        .filter((agent) => this.state.isChecked.includes(agent.id))
+        .map((agent) => {
           return agent;
         });
-      const hasNotWindowsAgent = selectedAgents.filter(element => element.os && element.os.platform !== 'windows');
-      const hasWindowAgent = selectedAgents.filter(element => element.os && element.os.platform === 'windows');
+      const hasNotWindowsAgent = selectedAgents.filter(
+        (element) => element.os && element.os.platform !== 'windows'
+      );
+      const hasWindowAgent = selectedAgents.filter(
+        (element) => element.os && element.os.platform === 'windows'
+      );
 
       if (this.state.isChecked.length == 0) {
-        this.showToast('warning',
-          'Warning',
-          'Please select at least one agent',
-          3000);
+        this.showToast('warning', 'Warning', 'Please select at least one agent', 3000);
         return;
-      }
-      else if (hasNotWindowsAgent.length > 0) {
-        const otherAgentsName = hasNotWindowsAgent.map(element => element.name).join(", ");
-        this.showToast('warning',
+      } else if (hasNotWindowsAgent.length > 0) {
+        const otherAgentsName = hasNotWindowsAgent.map((element) => element.name).join(', ');
+        this.showToast(
+          'warning',
           'Warning',
-          'We are not perform block usb in ' + otherAgentsName + ' agents, which is are not windows agents.',
-          3000);
+          'We are not perform block usb in ' +
+            otherAgentsName +
+            ' agents, which is are not windows agents.',
+          3000
+        );
       }
-
-      const body = {
-        "command": "unblockusb0",
-        "custom": false,
-        "alert": { data: {} },
-        "devTools": true
-      };
-      const windowsAgentsId = hasWindowAgent.map(element => element.id).join(", ");
-      const response = await WzRequest.apiReq('PUT', `/active-response?agents_list=${windowsAgentsId}`, body);
-      this.showToast('success',
-        'Success',
-        response?.data.message,
-        3000);
+      if (hasWindowAgent.length > 0) {
+        const body = {
+          command: 'unblockusb0',
+          custom: false,
+          alert: { data: {} },
+          devTools: true,
+        };
+        const windowsAgentsId = hasWindowAgent.map((element) => element.id).join(',');
+        const response = await WzRequest.apiReq(
+          'PUT',
+          `/active-response?agents_list=${windowsAgentsId}`,
+          body
+        );
+        this.showToast('success', 'Success', response?.data.message, 3000);
+      }
     }
-
 
     async isAllChecked() {
       return this.state.allChecked;
@@ -355,29 +377,25 @@ export const AgentsTable = withErrorBoundary(
     async onConfirmClick() {
       const textAreaValue = this.state.blockDomainTextArea;
 
-      if (this.state.isChecked.length == 0 || textAreaValue == "") {
+      if (this.state.isChecked.length == 0 || textAreaValue == '') {
         if (this.state.isChecked.length == 0) {
-          this.showToast('warning',
-            'Warning',
-            'Please select at least one agent',
-            3000);
+          this.showToast('warning', 'Warning', 'Please select at least one agent', 3000);
           return;
-        }
-        else {
-          this.showToast('warning',
-            'Warning',
-            'Please enter domain vaule',
-            3000);
+        } else {
+          this.showToast('warning', 'Warning', 'Please enter domain vaule', 3000);
           return;
         }
       }
-      const splitDomains = textAreaValue.split(',').map(domain => domain.trim()).filter(Boolean);
+      const splitDomains = textAreaValue
+        .split(',')
+        .map((domain) => domain.trim())
+        .filter(Boolean);
 
       this.setIsBlockDomainModalVisible(false);
       var agentIds = this.state.isChecked.join(',');
       var scanRes = await this.blockDomains(agentIds, splitDomains);
-      console.log("scnResBlockDomain", scanRes);
-    };
+      console.log('scnResBlockDomain', scanRes);
+    }
 
     // Columns with the property truncateText: true won't wrap the text
     // This is added to prevent the wrap because of the table-layout: auto
@@ -391,22 +409,24 @@ export const AgentsTable = withErrorBoundary(
               key='all'
               onChange={this.handleAllCheck.bind(this)}
               checked={this.state?.isChecked.length == this.state?.agents.length} /> */}
-            <a onClick={this.handleAllCheck.bind(this)}>All</a>
-          </>)
-        ,
+            <a onClick={this.handleAllCheck.bind(this)}>Select All</a>
+          </>
+        ),
         truncateText: false,
         mobileOptions: {
           show: false,
         },
         sortable: false,
         render: (agentId) => {
-          return <EuiCheckbox
-            id={agentId}
-            key={agentId}
-            checked={this.state.isChecked.includes(agentId)}
-            onChange={this.handleSingleCheck.bind(this)}
-          />
-        }
+          return (
+            <EuiCheckbox
+              id={agentId}
+              key={agentId}
+              checked={this.state.isChecked.includes(agentId)}
+              onChange={this.handleSingleCheck.bind(this)}
+            />
+          );
+        },
       },
       {
         field: 'id',
@@ -434,7 +454,7 @@ export const AgentsTable = withErrorBoundary(
         name: 'Group(s)',
         sortable: true,
         show: true,
-        render: groups => (groups !== '-' ? this.renderGroups(groups) : '-'),
+        render: (groups) => (groups !== '-' ? this.renderGroups(groups) : '-'),
         searchable: true,
       },
       {
@@ -445,6 +465,13 @@ export const AgentsTable = withErrorBoundary(
         show: true,
         render: (field, agentData) => this.addIconPlatformRender(agentData),
         searchable: true,
+      },
+      {
+        field: 'group',
+        name: 'Isolation Status',
+        truncateText: true,
+        render: (groups) => this.renderIsolationStatus(groups),
+        sortable: false,
       },
       {
         field: 'node_name',
@@ -466,10 +493,10 @@ export const AgentsTable = withErrorBoundary(
           <span>
             Registration date{' '}
             <EuiIconTip
-              content='This is not searchable through a search term.'
-              size='s'
-              color='subdued'
-              type='alert'
+              content="This is not searchable through a search term."
+              size="s"
+              color="subdued"
+              type="alert"
             />
           </span>
         ),
@@ -483,10 +510,10 @@ export const AgentsTable = withErrorBoundary(
           <span>
             Last keep alive{' '}
             <EuiIconTip
-              content='This is not searchable through a search term.'
-              size='s'
-              color='subdued'
-              type='alert'
+              content="This is not searchable through a search term."
+              size="s"
+              color="subdued"
+              type="alert"
             />
           </span>
         ),
@@ -500,16 +527,14 @@ export const AgentsTable = withErrorBoundary(
         truncateText: true,
         sortable: true,
         show: true,
-        render: (status, agent) => (
-          <AgentStatus status={status} agent={agent} />
-        ),
+        render: (status, agent) => <AgentStatus status={status} agent={agent} />,
       },
       {
         field: 'group_config_status',
         name: 'Synced',
         sortable: true,
         show: false,
-        render: synced => <AgentSynced synced={synced} />,
+        render: (synced) => <AgentSynced synced={synced} />,
         searchable: true,
       },
       {
@@ -530,12 +555,12 @@ export const AgentsTable = withErrorBoundary(
     }
 
     tableRender() {
-      const getRowProps = item => {
+      const getRowProps = (item) => {
         const { id } = item;
         return {
           'data-test-subj': `row-${id}`,
           className: 'customRowClass',
-          onClick: () => { },
+          onClick: () => {},
         };
       };
 
@@ -544,7 +569,7 @@ export const AgentsTable = withErrorBoundary(
           return;
         }
         return {
-          onClick: ev => {
+          onClick: (ev) => {
             AppNavigate.navigateToModule(ev, 'agents', {
               tab: 'welcome',
               agent: item.id,
@@ -558,26 +583,26 @@ export const AgentsTable = withErrorBoundary(
       // Previously the tableLayout is set to "fixed" with percentage width for each column, but the use of space was not optimal.
       // Important: If all the columns have the truncateText property set to true, the table cannot adjust properly when the viewport size is small.
       return (
-        <EuiFlexGroup className='wz-overflow-auto'>
+        <EuiFlexGroup className="wz-overflow-auto">
           <EuiFlexItem>
             <TableWzAPI
-              title='Agents'
+              title="Agents"
               actionButtons={[
                 <WzButtonPermissions
-                  buttonType='empty'
+                  buttonType="empty"
                   permissions={[{ action: 'agent:create', resource: '*:*:*' }]}
-                  iconType='plusInCircle'
+                  iconType="plusInCircle"
                   onClick={() => this.props.addingNewAgent()}
                 >
                   Deploy new agent
                 </WzButtonPermissions>,
               ]}
-              endpoint='/agents'
+              endpoint="/agents"
               tableColumns={this.defaultColumns}
-              tableInitialSortingField='id'
+              tableInitialSortingField="id"
               tablePageSizeOptions={[10, 25, 50, 100]}
               reload={this.state.reloadTable}
-              mapResponseItem={item => {
+              mapResponseItem={(item) => {
                 return {
                   ...item,
                   ...(item.ip ? { ip: item.ip } : { ip: '-' }),
@@ -651,36 +676,31 @@ export const AgentsTable = withErrorBoundary(
                     try {
                       switch (field) {
                         case 'status':
-                          return UI_ORDER_AGENT_STATUS.map(status => ({
+                          return UI_ORDER_AGENT_STATUS.map((status) => ({
                             label: status,
                           }));
                         case 'group_config_status':
-                          return [
-                            AGENT_SYNCED_STATUS.SYNCED,
-                            AGENT_SYNCED_STATUS.NOT_SYNCED,
-                          ].map(label => ({
-                            label,
-                          }));
+                          return [AGENT_SYNCED_STATUS.SYNCED, AGENT_SYNCED_STATUS.NOT_SYNCED].map(
+                            (label) => ({
+                              label,
+                            })
+                          );
                         default: {
-                          const response = await WzRequest.apiReq(
-                            'GET',
-                            '/agents',
-                            {
-                              params: {
-                                distinct: true,
-                                limit: SEARCH_BAR_WQL_VALUE_SUGGESTIONS_COUNT,
-                                select: field,
-                                sort: `+${field}`,
-                                ...(currentValue
-                                  ? {
+                          const response = await WzRequest.apiReq('GET', '/agents', {
+                            params: {
+                              distinct: true,
+                              limit: SEARCH_BAR_WQL_VALUE_SUGGESTIONS_COUNT,
+                              select: field,
+                              sort: `+${field}`,
+                              ...(currentValue
+                                ? {
                                     q: `${searchBarWQLOptions.implicitQuery.query}${searchBarWQLOptions.implicitQuery.conjunction}${field}~${currentValue}`,
                                   }
-                                  : {
+                                : {
                                     q: `${searchBarWQLOptions.implicitQuery.query}`,
                                   }),
-                              },
                             },
-                          );
+                          });
                           if (field === 'group') {
                             /* the group field is returned as an string[],
                             example: ['group1', 'group2']
@@ -694,21 +714,16 @@ export const AgentsTable = withErrorBoundary(
                             of groups.
                             */
                             return response?.data?.data.affected_items
-                              .map(item => getLodash(item, field))
+                              .map((item) => getLodash(item, field))
                               .flat()
-                              .filter(
-                                (item, index, array) =>
-                                  array.indexOf(item) === index,
-                              )
+                              .filter((item, index, array) => array.indexOf(item) === index)
                               .sort()
-                              .map(group => ({ label: group }));
+                              .map((group) => ({ label: group }));
                           }
 
-                          const agentsData = response?.data?.data.affected_items.map(
-                            item => ({
-                              label: getLodash(item, field),
-                            }),
-                          );
+                          const agentsData = response?.data?.data.affected_items.map((item) => ({
+                            label: getLodash(item, field),
+                          }));
 
                           this.setState({ agents: agentsData, allChecked: false, isChecked: [] });
                           return agentsData;
@@ -725,7 +740,7 @@ export const AgentsTable = withErrorBoundary(
                     if (value) {
                       if (['dateAdd', 'lastKeepAlive'].includes(field)) {
                         return /^\d{4}-\d{2}-\d{2}([ T]\d{2}:\d{2}:\d{2}(.\d{1,6})?Z?)?$/.test(
-                          value,
+                          value
                         )
                           ? undefined
                           : `"${value}" is not a expected format. Valid formats: YYYY-MM-DD, YYYY-MM-DD HH:mm:ss, YYYY-MM-DDTHH:mm:ss, YYYY-MM-DDTHH:mm:ssZ.`;
@@ -737,13 +752,12 @@ export const AgentsTable = withErrorBoundary(
               searchBarProps={{
                 buttonsRender: () => (
                   <EuiButton
-                    iconType='refresh'
+                    iconType="refresh"
                     fill={true}
                     onClick={() => {
-                      self.setState({ allChecked: false, isChecked: [] });
+                      this.setState({ allChecked: false, isChecked: [] });
                       this.reloadAgents();
-                    }
-                    }
+                    }}
                   >
                     Refresh
                   </EuiButton>
@@ -766,7 +780,7 @@ export const AgentsTable = withErrorBoundary(
               unBlockUSB={this.unBlockUSB.bind(this)}
             />
           </EuiFlexItem>
-          {this.state.isBlockDomainModelVisible ?
+          {this.state.isBlockDomainModelVisible ? (
             <EuiConfirmModal
               title="Block Domains"
               onCancel={() => {
@@ -781,7 +795,10 @@ export const AgentsTable = withErrorBoundary(
               buttonColor="primary"
               defaultFocusedButton="confirm"
             >
-              <p style={{ maxWidth: '500px' }}>Enter the domain names to be blocked on the selected agent machine, separating each domain with a comma.</p>
+              <p style={{ maxWidth: '500px' }}>
+                Enter the domain names to be blocked on the selected agent machine, separating each
+                domain with a comma.
+              </p>
               {/* <p>Selected agent ID: <b>{selectedAgent.agentId}</b></p> */}
               <EuiTextArea
                 placeholder="testdomain.com,testdomain2.com"
@@ -789,13 +806,15 @@ export const AgentsTable = withErrorBoundary(
                 fullWidth
                 aria-label="Block Domain Input"
               />
-            </EuiConfirmModal> : <></>
-          }
-        </EuiFlexGroup >
+            </EuiConfirmModal>
+          ) : (
+            <></>
+          )}
+        </EuiFlexGroup>
       );
     }
-    // actionGroupButtons = 
-    filterGroupBadge = group => {
+    // actionGroupButtons =
+    filterGroupBadge = (group) => {
       this.setState({
         filters: {
           default: { q: 'id!=000' },
@@ -816,17 +835,32 @@ export const AgentsTable = withErrorBoundary(
         />
       ) : undefined;
     }
-    render() {
 
+    renderIsolationStatus(status) {
+      var color = 'success';
+      var label = 'normal';
+      if (!!status && status.includes('isolation')) {
+        color = 'danger';
+        label = 'isolation';
+      }
+      if (!!status && status.includes('q-isolation')) {
+        color = 'warning';
+        label = 'pending isolation';
+      }
+      return <EuiHealth color={color}>{label}</EuiHealth>;
+    }
+
+    render() {
       const table = this.tableRender();
 
       return (
         <div>
-          <EuiPanel paddingSize='m'>{table}</EuiPanel>
+          <EuiPanel paddingSize="m">{table}</EuiPanel>
         </div>
       );
-    };
-  });
+    }
+  }
+);
 
 AgentsTable.propTypes = {
   wzReq: PropTypes.func,
