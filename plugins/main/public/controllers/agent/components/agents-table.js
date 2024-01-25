@@ -71,6 +71,8 @@ export const AgentsTable = withErrorBoundary(
         agents: this.props.affected_items,
         isBlockDomainModelVisible: false,
         blockDomainTextArea: '',
+        isDeleteAgentModalVisible: false,
+        deleteAgentDetails: {},
       };
     }
     async componentDidMount() {
@@ -164,6 +166,17 @@ export const AgentsTable = withErrorBoundary(
               />
             </EuiToolTip>
           )}
+          &nbsp;
+          <EuiToolTip position="top" content={<p>Delete Agent</p>}>
+            <EuiButtonIcon
+              iconType="trash"
+              color="danger"
+              aria-label="Delete"
+              onClick={() => {
+                this.setIsDeleteAgentModalVisible(true, agent);
+              }}
+            ></EuiButtonIcon>
+          </EuiToolTip>
         </div>
       );
     }
@@ -397,6 +410,25 @@ export const AgentsTable = withErrorBoundary(
       console.log('scnResBlockDomain', scanRes);
     }
 
+    async onDeleteConfirmClick() {      
+      this.setIsDeleteAgentModalVisible(false);
+      this.deleteAgent();
+    }
+
+    async deleteAgent() {
+      const body = {
+        devTools: true,
+        id: 'default',
+      };
+      const response = await WzRequest.apiReq(
+        'DELETE',
+        `/agents?pretty=true&older_than=0s&agents_list=${this.state.deleteAgentDetails.id}&status=all`,
+        body
+      );
+      this.showToast('success', 'Success', response?.data.message, 3000);
+      this.reloadAgents();
+    }
+
     // Columns with the property truncateText: true won't wrap the text
     // This is added to prevent the wrap because of the table-layout: auto
     defaultColumns = [
@@ -547,11 +579,18 @@ export const AgentsTable = withErrorBoundary(
         searchable: false,
       },
     ];
+
     setAgents(data) {
       this.setState({ agents: data });
     }
+
     setIsBlockDomainModalVisible(enable) {
       this.setState({ isBlockDomainModelVisible: enable });
+    }
+
+    setIsDeleteAgentModalVisible(enable, agent) {
+      this.setState({ deleteAgentDetails: agent });
+      this.setState({ isDeleteAgentModalVisible: enable });
     }
 
     tableRender() {
@@ -806,6 +845,26 @@ export const AgentsTable = withErrorBoundary(
                 fullWidth
                 aria-label="Block Domain Input"
               />
+            </EuiConfirmModal>
+          ) : (
+            <></>
+          )}
+          {this.state.isDeleteAgentModalVisible ? (
+            <EuiConfirmModal
+              title="Delete agent"
+              onCancel={() => {
+                this.setIsDeleteAgentModalVisible(false);
+              }}
+              onConfirm={() => {
+                this.onDeleteConfirmClick();
+                this.setIsDeleteAgentModalVisible(false);
+              }}
+              cancelButtonText="Cancel"
+              confirmButtonText="Delete"
+              buttonColor="danger"
+              defaultFocusedButton="confirm"
+            >
+              <p>Selected agent will be removed from the manager.</p>
             </EuiConfirmModal>
           ) : (
             <></>
