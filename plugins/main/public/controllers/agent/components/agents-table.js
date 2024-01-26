@@ -73,6 +73,8 @@ export const AgentsTable = withErrorBoundary(
         blockDomainTextArea: '',
         isDeleteAgentModalVisible: false,
         deleteAgentDetails: {},
+        isRestartAgentModalVisible: false,
+        restartAgentDetails: {},
       };
     }
     async componentDidMount() {
@@ -166,6 +168,17 @@ export const AgentsTable = withErrorBoundary(
               />
             </EuiToolTip>
           )}
+          &nbsp;
+          <EuiToolTip position="top" content={<p>Restart Agent</p>}>
+            <EuiButtonIcon
+              iconType="refresh"
+              isDisabled={agent.agentStatus != 'active' ? true : false}
+              aria-label="restart"
+              onClick={() => {
+                this.setIsRestartAgentModalVisible(true, agent);
+              }}
+            ></EuiButtonIcon>
+          </EuiToolTip>
           &nbsp;
           <EuiToolTip position="top" content={<p>Delete Agent</p>}>
             <EuiButtonIcon
@@ -410,7 +423,7 @@ export const AgentsTable = withErrorBoundary(
       console.log('scnResBlockDomain', scanRes);
     }
 
-    async onDeleteConfirmClick() {      
+    async onDeleteConfirmClick() {
       this.setIsDeleteAgentModalVisible(false);
       this.deleteAgent();
     }
@@ -423,6 +436,25 @@ export const AgentsTable = withErrorBoundary(
       const response = await WzRequest.apiReq(
         'DELETE',
         `/agents?pretty=true&older_than=0s&agents_list=${this.state.deleteAgentDetails.id}&status=all`,
+        body
+      );
+      this.showToast('success', 'Success', response?.data.message, 3000);
+      this.reloadAgents();
+    }
+
+    async onRestartConfirmClick() {
+      this.setIsRestartAgentModalVisible(false);
+      this.restartAgent();
+    }
+
+    async restartAgent() {
+      const body = {
+        devTools: true,
+        id: 'default',
+      };
+      const response = await WzRequest.apiReq(
+        'PUT',
+        `/agents/${this.state.restartAgentDetails.id}/restart`,
         body
       );
       this.showToast('success', 'Success', response?.data.message, 3000);
@@ -591,6 +623,11 @@ export const AgentsTable = withErrorBoundary(
     setIsDeleteAgentModalVisible(enable, agent) {
       this.setState({ deleteAgentDetails: agent });
       this.setState({ isDeleteAgentModalVisible: enable });
+    }
+
+    setIsRestartAgentModalVisible(enable, agent) {
+      this.setState({ restartAgentDetails: agent });
+      this.setState({ isRestartAgentModalVisible: enable });
     }
 
     tableRender() {
@@ -865,6 +902,26 @@ export const AgentsTable = withErrorBoundary(
               defaultFocusedButton="confirm"
             >
               <p>Selected agent will be removed from the manager.</p>
+            </EuiConfirmModal>
+          ) : (
+            <></>
+          )}
+          {this.state.isRestartAgentModalVisible ? (
+            <EuiConfirmModal
+              title="Restart agent"
+              onCancel={() => {
+                this.setIsRestartAgentModalVisible(false);
+              }}
+              onConfirm={() => {
+                this.onRestartConfirmClick();
+                this.setIsRestartAgentModalVisible(false);
+              }}
+              cancelButtonText="Cancel"
+              confirmButtonText="Restart"
+              buttonColor="primary"
+              defaultFocusedButton="confirm"
+            >
+              <p>Selected Agent will be restarted.</p>
             </EuiConfirmModal>
           ) : (
             <></>
