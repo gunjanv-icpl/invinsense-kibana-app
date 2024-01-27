@@ -168,17 +168,17 @@ export const AgentsTable = withErrorBoundary(
               />
             </EuiToolTip>
           )}
-          &nbsp;
+          {/* &nbsp;
           <EuiToolTip position="top" content={<p>Restart Agent</p>}>
             <EuiButtonIcon
               iconType="refresh"
-              isDisabled={agent.agentStatus != 'active' ? true : false}
+              isDisabled={agent.status !== 'active' ? true : false}
               aria-label="restart"
               onClick={() => {
                 this.setIsRestartAgentModalVisible(true, agent);
               }}
             ></EuiButtonIcon>
-          </EuiToolTip>
+          </EuiToolTip> */}
           &nbsp;
           <EuiToolTip position="top" content={<p>Delete Agent</p>}>
             <EuiButtonIcon
@@ -448,6 +448,7 @@ export const AgentsTable = withErrorBoundary(
     }
 
     async restartAgent() {
+      console.log(this.state.restartAgentDetails);
       const body = {
         devTools: true,
         id: 'default',
