@@ -180,17 +180,6 @@ export const AgentsTable = withErrorBoundary(
             ></EuiButtonIcon>
           </EuiToolTip> */}
           &nbsp;
-          <EuiToolTip position="top" content={<p>Restart Agent</p>}>
-            <EuiButtonIcon
-              iconType="refresh"
-              isDisabled={agent.agentStatus != 'active' ? true : false}
-              aria-label="restart"
-              onClick={() => {
-                this.setIsRestartAgentModalVisible(true, agent);
-              }}
-            ></EuiButtonIcon>
-          </EuiToolTip>
-          &nbsp;
           <EuiToolTip position="top" content={<p>Delete Agent</p>}>
             <EuiButtonIcon
               iconType="trash"
@@ -253,10 +242,10 @@ export const AgentsTable = withErrorBoundary(
           'warning',
           'Warning',
           'We are not perform ' +
-            groupName +
-            ' in ' +
-            otherAgentsName +
-            ' agents, which is are not windows agents.',
+          groupName +
+          ' in ' +
+          otherAgentsName +
+          ' agents, which is are not windows agents.',
           3000
         );
       }
@@ -294,8 +283,8 @@ export const AgentsTable = withErrorBoundary(
           'warning',
           'Warning',
           'We are not perform block domains in ' +
-            otherAgentsName +
-            ' agents, which is are not windows agents.',
+          otherAgentsName +
+          ' agents, which is are not windows agents.',
           3000
         );
       }
@@ -339,8 +328,8 @@ export const AgentsTable = withErrorBoundary(
           'warning',
           'Warning',
           'We are not perform block usb in ' +
-            otherAgentsName +
-            ' agents, which is are not windows agents.',
+          otherAgentsName +
+          ' agents, which is are not windows agents.',
           3000
         );
       }
@@ -385,8 +374,8 @@ export const AgentsTable = withErrorBoundary(
           'warning',
           'Warning',
           'We are not perform block usb in ' +
-            otherAgentsName +
-            ' agents, which is are not windows agents.',
+          otherAgentsName +
+          ' agents, which is are not windows agents.',
           3000
         );
       }
@@ -647,7 +636,7 @@ export const AgentsTable = withErrorBoundary(
         return {
           'data-test-subj': `row-${id}`,
           className: 'customRowClass',
-          onClick: () => {},
+          onClick: () => { },
         };
       };
 
@@ -781,11 +770,11 @@ export const AgentsTable = withErrorBoundary(
                               sort: `+${field}`,
                               ...(currentValue
                                 ? {
-                                    q: `${searchBarWQLOptions.implicitQuery.query}${searchBarWQLOptions.implicitQuery.conjunction}${field}~${currentValue}`,
-                                  }
+                                  q: `${searchBarWQLOptions.implicitQuery.query}${searchBarWQLOptions.implicitQuery.conjunction}${field}~${currentValue}`,
+                                }
                                 : {
-                                    q: `${searchBarWQLOptions.implicitQuery.query}`,
-                                  }),
+                                  q: `${searchBarWQLOptions.implicitQuery.query}`,
+                                }),
                             },
                           });
                           if (field === 'group') {
